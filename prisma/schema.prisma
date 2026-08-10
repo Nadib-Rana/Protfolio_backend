@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum ProjectStatus {
+  Live
+  In_Development
+}
+
+enum TutorialLevel {
+  Beginner
+  Intermediate
+  Advanced
+}
+
+model AdminUser {
+  id        String    @id @default(uuid()) @db.Uuid
+  username  String    @unique
+  email     String    @unique
+  password  String
+  role      AdminRole @default(ADMIN)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+model Project {
+  id               String        @id @default(uuid()) @db.Uuid
+  slug             String        @unique
+  title            String
+  description      String        @db.Text
+  period           String
+  status           ProjectStatus @default(Live)
+  team             String?
+  image            String?
+  projectType      String?       @map("project_type")
+  architectureFlow String?       @map("architecture_flow")
+  githubUrl        String?       @map("github_url")
+  liveDemoUrl      String?       @map("live_demo_url")
+  modules          String[]
+  features         String[]
+  tags             String[]
+  resourcesJson    Json?         @map("resources_json")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  @@map("projects")
+}
+
+model BlogPost {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  title       String
+  summary     String   @db.Text
+  category    String
+  publishedAt String   @map("published_at")
+  readTime    String   @map("read_time")
+  featured    Boolean  @default(false)
+  image       String?
+  intro       String   @db.Text
+  conclusion  String   @db.Text
+  highlights  String[]
+  tags        String[]
+  sectionsJson Json?   @map("sections_json")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("blog_posts")
+}
+
+model ServiceOffering {
+  id           String   @id @default(uuid()) @db.Uuid
+  slug         String   @unique
+  title        String
+  description  String   @db.Text
+  iconLabel    String   @map("icon_label")
+  deliverables String[]
+  bestFor      String   @map("best_for")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("service_offerings")
+}
+
+model TutorialVideo {
+  id          String        @id @default(uuid()) @db.Uuid
+  slug        String        @unique
+  title       String
+  summary     String        @db.Text
+  category    String
+  publishedAt String        @map("published_at")
+  duration    String
+  level       TutorialLevel @default(Intermediate)
+  highlights  String[]
+  topics      String[]
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("tutorial_videos")
+}
+
+model TechStackCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  iconKey     String   @map("icon_key")
+  title       String
+  description String   @db.Text
+  gradient    String
+  tagsJson    Json     @map("tags_json")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("tech_stack_categories")
+}
+
+model CurriculumVitae {
+  id                 String   @id @default(uuid()) @db.Uuid
+  personalJson       Json     @map("personal_json")
+  educationJson      Json     @map("education_json")
+  experienceJson     Json     @map("experience_json")
+  skillsJson         Json     @map("skills_json")
+  customSectionsJson Json?    @map("custom_sections_json")
+  sectionOrderJson   Json?    @map("section_order_json")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("curriculum_vitae")
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String
+  subject   String?
+  message   String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("contact_messages")
+}
