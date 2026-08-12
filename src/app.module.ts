@@ -17,6 +17,7 @@ import { TechStackModule } from "./tech-stack/tech-stack.module";
 import { CVModule } from "./cv/cv.module";
 import { ContactModule } from "./contact/contact.module";
 import { StorageModule } from "./storage/storage.module";
+import { TestimonialsModule } from "./testimonials/testimonials.module";
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { StorageModule } from "./storage/storage.module";
     CVModule,
     ContactModule,
     StorageModule,
+    TestimonialsModule,
   ],
   controllers: [AppController],
   providers: [

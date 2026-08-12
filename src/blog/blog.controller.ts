@@ -47,4 +47,9 @@ export class BlogController {
   async deletePost(@Param("id") id: string) {
     return this.blogService.remove(id);
   }
+
+  @Post(":id/like")
+  async likePost(@Param("id") id: string) {
+    return this.blogService.likePost(id);
+  }
 }

@@ -77,4 +77,16 @@ export class BlogService {
 
     return this.prisma.blogPost.delete({ where: { id } });
   }
+
+  async likePost(idOrSlug: string) {
+    const post = await this.prisma.blogPost.findFirst({
+      where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+    });
+    if (!post) throw new NotFoundException("Article not found");
+
+    return this.prisma.blogPost.update({
+      where: { id: post.id },
+      data: { likes: { increment: 1 } },
+    });
+  }
 }
