@@ -1,0 +1,74 @@
+import { HttpAdapterHost, NestFactory } from "@nestjs/core";
+import { AppModule } from "../src/app.module";
+import { ValidationPipe, BadRequestException } from "@nestjs/common";
+import { AllExceptionsFilter } from "../src/common/filters/all-exceptions.filter";
+import { ContextService } from "../src/common/context/context.service";
+import { ExpressAdapter } from "@nestjs/platform-express";
+import express from "express";
+
+const server = express();
+let cachedApp: any;
+
+async function bootstrap() {
+  if (!cachedApp) {
+    const app = await NestFactory.create(
+      AppModule,
+      new ExpressAdapter(server),
+    );
+
+    app.use(express.json({ limit: "50mb" }));
+    app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+    const allowedOrigins = process.env.CORS_ORIGINS
+      ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim())
+      : true;
+
+    app.enableCors({
+      origin: allowedOrigins,
+      methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+      credentials: true,
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "ngrok-skip-browser-warning",
+      ],
+    });
+
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: false,
+        exceptionFactory: (errors) => {
+          const messages = errors.map((error) => {
+            const constraints = error.constraints;
+            if (constraints) {
+              return Object.values(constraints).join(", ");
+            }
+            return `Validation failed for ${error.property}`;
+          });
+          return new BadRequestException({
+            statusCode: 400,
+            message: messages,
+            error: "Validation Failed",
+          });
+        },
+      }),
+    );
+
+    const httpAdapterHost = app.get(HttpAdapterHost);
+    const contextService = app.get(ContextService);
+    app.useGlobalFilters(
+      new AllExceptionsFilter(httpAdapterHost, contextService),
+    );
+
+    await app.init();
+    cachedApp = app;
+  }
+  return cachedApp;
+}
+
+export default async function handler(req: any, res: any) {
+  await bootstrap();
+  server(req, res);
+}
