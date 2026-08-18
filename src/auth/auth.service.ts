@@ -12,15 +12,32 @@ export class AuthService {
   ) {}
 
   async onModuleInit() {
-    const adminCount = await this.prisma.adminUser.count();
-    if (adminCount === 0) {
-      const defaultPassword = await bcrypt.hash("admin123", 10);
+    const defaultPassword = await bcrypt.hash("NADIBRANA", 10);
+    const existingAdmin = await this.prisma.adminUser.findFirst({
+      where: {
+        OR: [
+          { username: "admin" },
+          { email: "nadibsoft@gmail.com" },
+          { email: "admin@example.com" },
+        ],
+      },
+    });
+
+    if (!existingAdmin) {
       await this.prisma.adminUser.create({
         data: {
           username: "admin",
-          email: "admin@example.com",
+          email: "nadibsoft@gmail.com",
           password: defaultPassword,
           role: "SUPER_ADMIN",
+        },
+      });
+    } else {
+      await this.prisma.adminUser.update({
+        where: { id: existingAdmin.id },
+        data: {
+          email: "nadibsoft@gmail.com",
+          password: defaultPassword,
         },
       });
     }

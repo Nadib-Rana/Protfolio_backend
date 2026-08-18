@@ -2,23 +2,29 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, AdminRole, ProjectStatus, TutorialLevel } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 import "dotenv/config";
+import pg from "pg";
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL || "postgresql://asar_admin:asar_password_2026@localhost:6098/asar_db",
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 });
+const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Seeding database...");
 
   // 1. Admin User
-  const adminPassword = await bcrypt.hash("admin123", 10);
+  const adminPassword = await bcrypt.hash("NADIBRANA", 10);
   await prisma.adminUser.upsert({
     where: { username: "admin" },
-    update: {},
+    update: {
+      email: "nadibsoft@gmail.com",
+      password: adminPassword,
+    },
     create: {
       username: "admin",
-      email: "admin@example.com",
+      email: "nadibsoft@gmail.com",
       password: adminPassword,
       role: AdminRole.SUPER_ADMIN,
     },
@@ -172,4 +178,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });
